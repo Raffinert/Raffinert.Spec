@@ -3,7 +3,7 @@
 # Raffinert.Spec
 [![NuGet version (Raffinert.Spec)](https://img.shields.io/nuget/v/Raffinert.Spec.svg?style=flat-square)](https://www.nuget.org/packages/Raffinert.Spec/)
 
-`Raffinert.Spec` is a lightweight, composable specification library for building reusable query logic for Entity Framework.
+`Raffinert.Spec` is a lightweight, composable specification library designed for building reusable query logic, with a focus on Entity Framework.
 
 ## Features
 - **Composable Specifications**: Easily combine specifications using `AND`, `OR`, and `NOT` operators.
