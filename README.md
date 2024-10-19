@@ -25,7 +25,7 @@ To use `Raffinert.Spec`, add it as a dependency to your project.
 * [Ardalis.Specification](https://github.com/ardalis/Specification), and 
 * [LINQKit](https://github.com/scottksmith95/LINQKit).
 
-`Raffinert.Spec` is closely aligned with [NSpecifications](https://github.com/miholler/NSpecifications) but has been streamlined for maximum simplicity and ease of use.
+It is closely aligned with [NSpecifications](https://github.com/miholler/NSpecifications).
 
 ## Usage
 
