@@ -1,6 +1,7 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
 
 # Raffinert.Spec
+[![NuGet version (Raffinert.Spec)](https://img.shields.io/nuget/v/Raffinert.Spec.svg?style=flat-square)](https://www.nuget.org/packages/Raffinert.Spec/)
 
 `Raffinert.Spec` is a lightweight, composable specification library for building reusable query logic for Entity Framework.
 
@@ -10,12 +11,6 @@
 - **Debugger Support**: Enhanced debugging with `DebuggerDisplay` and `DebuggerTypeProxy`.
 - **Predicate Testing**: Use `IsSatisfiedBy` to test if a specification is satisfied by a candidate.
 - **Operator Overloading**: Use natural operators (`&&`, `||`, `!`) to compose specifications.
-
-## Installation
-
-![Nuget](https://img.shields.io/nuget/v/Raffinert.Spec)
-
-To use `Raffinert.Spec`, add it as a dependency to your project. 
 
 ## Why Another Specification Library?
 
