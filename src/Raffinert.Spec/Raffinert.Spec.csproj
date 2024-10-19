@@ -12,15 +12,15 @@
 	<AssemblyVersion>1.0.0</AssemblyVersion>
 	<FileVersion>1.0.0</FileVersion>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
-	<Copyright>Copyright 2024 - $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
+	<Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<Title>Raffinert.Spec</Title>
-	<Description>Raffinert.Spec is a lightweight, composable library for the Specification pattern for building reusable query logic.</Description>
+	<Description>Raffinert.Spec is a lightweight, composable library that implements the Specification pattern to build reusable query logic.</Description>
 	<PackageProjectUrl>https://github.com/Raffinert/Spec</PackageProjectUrl>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<RepositoryUrl>https://github.com/Raffinert/Spec.git</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
-	<PackageTags>Specification, Spec, DDD</PackageTags>
+	<PackageTags>Specification, Spec</PackageTags>
 	<NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
   
