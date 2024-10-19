@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Raffinert.Spec\Raffinert.Spec.csproj" />
+    <ProjectReference Include="..\..\src\Raffinert.Spec\Raffinert.Spec.csproj" />
   </ItemGroup>
 
   <ItemGroup>
