@@ -12,9 +12,7 @@
 - **Predicate Testing**: Use `IsSatisfiedBy` to test if a specification is satisfied by a candidate.
 - **Operator Overloading**: Use natural operators (`&&`, `||`, `!`) to compose specifications.
 
-## Why Another Specification Library?
-
-`Raffinert.Spec` was created after the analysis of existing libraries and source code like:
+`Raffinert.Spec` is based on the ideas of existing libraries and source code like:
 * [NSpecifications](https://github.com/miholler/NSpecifications), 
 * [SpecificationPattern](https://github.com/vkhorikov/SpecificationPattern), 
 * [Ardalis.Specification](https://github.com/ardalis/Specification), and 
