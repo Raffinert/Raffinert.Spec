@@ -12,13 +12,13 @@
 - **Predicate Testing**: Use `IsSatisfiedBy` to test if a specification is satisfied by a candidate.
 - **Operator Overloading**: Use natural operators (`&&`, `||`, `!`) to compose specifications.
 
-`Raffinert.Spec` is based on the ideas of existing libraries and source code like:
-* [NSpecifications](https://github.com/miholler/NSpecifications), 
-* [SpecificationPattern](https://github.com/vkhorikov/SpecificationPattern), 
-* [Ardalis.Specification](https://github.com/ardalis/Specification), and 
+`Raffinert.Spec` is inspired by libraries such as:"
+* [NSpecifications](https://github.com/miholler/NSpecifications). 
+* [SpecificationPattern](https://github.com/vkhorikov/SpecificationPattern).
+* [Ardalis.Specification](https://github.com/ardalis/Specification).
 * [LINQKit](https://github.com/scottksmith95/LINQKit).
 
-It is closely aligned with [NSpecifications](https://github.com/miholler/NSpecifications).
+It reuses much of the logic from [NSpecifications](https://github.com/miholler/NSpecifications).
 
 ## Usage
 
@@ -41,10 +41,10 @@ Spec<int> alwaysFalse = Spec<int>.False();
 // Custom specification class
 class IsPositiveSpec : Spec<int>
 {
-	public override Expression<Func<int, bool>> ToExpression()
-	{
-		return x => x > 0;
-	}
+    public override Expression<Func<int, bool>> ToExpression()
+    {
+        return x => x > 0;
+    }
 }
 ```
 
