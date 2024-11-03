@@ -1,7 +1,7 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Raffinert.Spec.IntegrationTests.Infrastructure;
 using Raffinert.Spec.IntegrationTests.Model;
+using System.Linq.Expressions;
 
 namespace Raffinert.Spec.IntegrationTests;
 
@@ -103,6 +103,38 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
                 Price = 8.0m
             }
         }, filteredProducts);
+    }
+
+    [Fact]
+    public async Task ComplexSpecificationComposition()
+    {
+        // Arrange
+        var bananaSpec = Spec<Product>.Create(p => p.Name == "Banana");
+        var categoryWithBananaProductMethodGroup = Spec<Category>.Create(c => c.Products.Any(bananaSpec.IsSatisfiedBy));
+
+        var appleSpec = new ProductNameSpec("Apple");
+        var categoryWithAppleProduct = Spec<Category>.Create(c => c.Products.Any(p => appleSpec.IsSatisfiedBy(p)));
+        
+        // Act1
+        var catQueryMethodGroup = _context.Categories.Where(categoryWithBananaProductMethodGroup);
+        var filteredCategoriesMethodGroup = await catQueryMethodGroup.ToArrayAsync();
+
+        // Act2
+        var catQuery = _context.Categories.Where(categoryWithAppleProduct);
+        var filteredCategories = await catQuery.ToArrayAsync();
+
+        // Assert
+        Category[] expectedCategories =
+        [
+            new Category
+            {
+                Id = 1,
+                Name = "Fruit"
+            }
+        ];
+
+        Assert.Equivalent(expectedCategories, filteredCategoriesMethodGroup);
+        Assert.Equivalent(expectedCategories, filteredCategories);
     }
 
     private class ProductNameSpec(string name) : Spec<Product>

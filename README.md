@@ -3,91 +3,121 @@
 # Raffinert.Spec
 [![NuGet version (Raffinert.Spec)](https://img.shields.io/nuget/v/Raffinert.Spec.svg?style=flat-square)](https://www.nuget.org/packages/Raffinert.Spec/)
 
-`Raffinert.Spec` is a lightweight, composable specification library designed for building reusable query logic, with a focus on Entity Framework.
-
-## Features
-- **Composable Specifications**: Easily combine specifications using `AND`, `OR`, and `NOT` operators.
-- **Dynamic Expression Creation**: Build complex, reusable query logic with minimal boilerplate.
-- **Debugger Support**: Enhanced debugging with `DebuggerDisplay` and `DebuggerTypeProxy`.
-- **Predicate Testing**: Use `IsSatisfiedBy` to test if a specification is satisfied by a candidate.
-- **Operator Overloading**: Use natural operators (`&&`, `||`, `!`) to compose specifications.
-
-`Raffinert.Spec` is inspired by libraries such as:
+`Raffinert.Spec` is a rethinking of libraries such as:
 * [NSpecifications](https://github.com/miholler/NSpecifications). 
 * [SpecificationPattern](https://github.com/vkhorikov/SpecificationPattern).
 * [Ardalis.Specification](https://github.com/ardalis/Specification).
 * [LINQKit](https://github.com/scottksmith95/LINQKit).
+* [SpeciVacation](https://github.com/joakimjm/specivacation).
 
-It reuses much of the logic from [NSpecifications](https://github.com/miholler/NSpecifications).
+## Why Another Specification Library?
+
+1. **Cleaner IDE**: `Raffinert.Spec` doesn't add any extension methods to common classes like `object` or `Expression<Func<TEntity, bool>>`. This means you won't see a lot of extra options in your IntelliSense.
+
+2. **Simple Design**: All the 'magic' is incapsulated inside the Spec<T> and then can be explicitly or implicitly converted to Expression<Func<TEntity, bool>>. No Includes, Paginations and other extra features.
+
+3. **Flexible Use**: It supports a mixed approach by allowing the use of separate specification classes as well as inline specifications. This makes it easy to combine expressions, including nested items, with no fragile code.
+
 
 ## Usage
+Full examples see in [Integration Tests](https://github.com/Raffinert/Raffinert.Spec/blob/main/tests/Raffinert.Spec.IntegrationTests/SpecTests.cs)
 
 ### Defining a Specification
 
-You can define specifications either inline, use predefined `True` and `False` specifications or create custom specification class.
+You can define specifications either inline or create custom specification classes. Below is an example of a custom specification for filtering products by name:
 
 ```csharp
 using Raffinert.Spec;
+using System.Linq.Expressions;
 
-// Inline specification for checking if a number is positive
-Spec<int> isPositive = Spec<int>.Create(x => x > 0);
-
-// True specification
-Spec<int> alwaysTrue = Spec<int>.True();
-
-// False specification
-Spec<int> alwaysFalse = Spec<int>.False();
-
-// Custom specification class
-class IsPositiveSpec : Spec<int>
+public class ProductNameSpec : Spec<Product>
 {
-    public override Expression<Func<int, bool>> ToExpression()
+    private readonly string _name;
+
+    public ProductNameSpec(string name)
     {
-        return x => x > 0;
+        _name = name;
+    }
+
+    public override Expression<Func<Product, bool>> GetExpression()
+    {
+        return product => product.Name == _name;
     }
 }
 ```
 
 ### Composing Specifications
 
-You can combine specifications using logical operators (`AND`, `OR`, `NOT`) with method chaining or operator overloads.
+You can combine specifications using logical operators (`AND`, `OR`, `NOT`) with method chaining or operator overloads. Here are some examples using a test context:
 
-#### AND Specification
+#### Example: Filtering Products
 
 ```csharp
-Spec<int> isPositive = Spec<int>.Create(x => x > 0);
-Spec<int> isEven = Spec<int>.Create(x => x % 2 == 0);
+// Arrange
+var appleSpec = new ProductNameSpec("Apple");
+var bananaSpec = Spec<Product>.Create(p => p.Name == "Banana");
+var bananaOrAppleSpec = bananaSpec || appleSpec; // OR specification
+var notBananaAndNotAppleSpec = !bananaOrAppleSpec; // NOT specification
 
-// Combine with AND (Both positive and even)
-Spec<int> isPositiveAndEven = isPositive.And(isEven);
+// Act
+var productsQuery = _context.Products.Where(notBananaAndNotAppleSpec);
+var filteredProducts = await productsQuery.ToArrayAsync();
 
-// Or using the && operator
-Spec<int> isPositiveAndEvenOperator = isPositive && isEven;
+// Assert
+Assert.Equivalent(new[] 
+{
+    new Product { Id = 3, Name = "Cherry", Price = 8.0m }
+}, filteredProducts);
 ```
 
-#### OR Specification
+### Filtering with Methods
+
+You can also define specifications using methods:
 
 ```csharp
-Spec<int> isPositive = Spec<int>.Create(x => x > 0);
-Spec<int> isEven = Spec<int>.Create(x => x % 2 == 0);
+// Arrange
+var bananaSpec = Spec<Product>.Create(p => p.Name == "Banana");
+var bananaOrAppleSpec = bananaSpec.Or(p => p.Name == "Apple"); // OR specification
+var notBananaAndNotAppleSpec = !bananaOrAppleSpec; // NOT specification
 
-// Combine with OR (Either positive or even)
-Spec<int> isPositiveOrEven = isPositive.Or(isEven);
+// Act
+var filteredProducts = _context.ProductArray.Where(notBananaAndNotAppleSpec).ToArray();
 
-// Or using the || operator
-Spec<int> isPositiveOrEvenOperator = isPositive || isEven;
+// Assert
+Assert.Equivalent(new[] 
+{
+    new Product { Id = 3, Name = "Cherry", Price = 8.0m }
+}, filteredProducts);
 ```
 
-#### NOT Specification
+### Complex Specification Composition
+
+You can also compose specifications across multiple entities, as shown in the following example:
 
 ```csharp
-Spec<int> isPositive = Spec<int>.Create(x => x > 0);
+// Arrange
+var bananaSpec = Spec<Product>.Create(p => p.Name == "Banana");
+var categoryWithBananaProductMethodGroup = Spec<Category>.Create(c => c.Products.Any(bananaSpec.IsSatisfiedBy));
 
-// Negate the positive specification
-Spec<int> isNotPositive = isPositive.Not();
+var appleSpec = new ProductNameSpec("Apple");
+var categoryWithAppleProduct = Spec<Category>.Create(c => c.Products.Any(p => appleSpec.IsSatisfiedBy(p)));
 
-// Or using the ! operator
-Spec<int> isNotPositiveOperator = !isPositive;
+// Act1
+var catQueryMethodGroup = _context.Categories.Where(categoryWithBananaProductMethodGroup);
+var filteredCategoriesMethodGroup = await catQueryMethodGroup.ToArrayAsync();
+
+// Act2
+var catQuery = _context.Categories.Where(categoryWithAppleProduct);
+var filteredCategories = await catQuery.ToArrayAsync();
+
+// Assert
+Category[] expectedCategories = new[]
+{
+    new Category { Id = 1, Name = "Fruit" }
+};
+
+Assert.Equivalent(expectedCategories, filteredCategoriesMethodGroup);
+Assert.Equivalent(expectedCategories, filteredCategories);
 ```
 
 ### Evaluating Specifications
@@ -95,43 +125,10 @@ Spec<int> isNotPositiveOperator = !isPositive;
 You can evaluate if an object satisfies a specification using the `IsSatisfiedBy` method:
 
 ```csharp
-Spec<int> isPositive = Spec<int>.Create(x => x > 0);
-
-// Check if the candidate satisfies the specification
-bool result = isPositive.IsSatisfiedBy(5); // true
+// Example usage
+var isSatisfied = bananaSpec.IsSatisfiedBy(new Product { Name = "Banana" }); // true
 ```
 
-### Full Example
-
-```csharp
-Spec<int> isPositive = Spec<int>.Create(x => x > 0);
-Spec<int> isEven = Spec<int>.Create(x => x % 2 == 0);
-
-// Complex specification: Positive and even, or not positive
-Spec<int> complexSpec = (isPositive.And(isEven)).Or(!isPositive);
-
-// Evaluate the specification
-bool result = complexSpec.IsSatisfiedBy(4);  // true (4 is positive and even)
-```
-
-### Converting to Expressions or Delegates
-
-You can convert a `Spec<T>` into an `Expression<Func<T, bool>>` or a compiled `Func<T, bool>` for direct execution:
-
-```csharp
-Spec<int> isPositive = Spec<int>.Create(x => x > 0);
-
-// Convert to an expression
-Expression<Func<int, bool>> expression = isPositive;
-
-// Compile to a function
-Func<int, bool> func = isPositive;
-```
-
-## Debugging
+### Debugging
 
 The `Spec<T>` class includes built-in debugging support with a custom debugger display, giving developers an immediate view of the underlying expression while debugging.
-
-## License
-
-This library is licensed under the MIT License.
