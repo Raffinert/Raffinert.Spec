@@ -96,28 +96,40 @@ You can also compose specifications across multiple entities, as shown in the fo
 
 ```csharp
 // Arrange
-var bananaSpec = Spec<Product>.Create(p => p.Name == "Banana");
-var categoryWithBananaProductMethodGroup = Spec<Category>.Create(c => c.Products.Any(bananaSpec.IsSatisfiedBy));
+var bananaStringSpec = Spec<string>.Create(n => n == "Banana");
+var categoryWithBanana = Spec<Category>.Create(c => c.Products.Any(p => bananaStringSpec.IsSatisfiedBy(p.Name)));
+
+var bananaSpec1 = Spec<Product>.Create(p => p.Name == "Banana");
+var categoryWithBananaProductMethodGroup = Spec<Category>.Create(c => c.Products.Any(bananaSpec1.IsSatisfiedBy));
 
 var appleSpec = new ProductNameSpec("Apple");
 var categoryWithAppleProduct = Spec<Category>.Create(c => c.Products.Any(p => appleSpec.IsSatisfiedBy(p)));
 
 // Act1
-var catQueryMethodGroup = _context.Categories.Where(categoryWithBananaProductMethodGroup);
-var filteredCategoriesMethodGroup = await catQueryMethodGroup.ToArrayAsync();
+var catQuery1 = _context.Categories.Where(categoryWithBanana);
+var filteredCategories1 = await catQuery1.ToArrayAsync();
 
 // Act2
-var catQuery = _context.Categories.Where(categoryWithAppleProduct);
-var filteredCategories = await catQuery.ToArrayAsync();
+var catQuery2 = _context.Categories.Where(categoryWithBananaProductMethodGroup);
+var filteredCategories2 = await catQuery2.ToArrayAsync();
+
+// Act3
+var catQuery3 = _context.Categories.Where(categoryWithAppleProduct);
+var filteredCategories3 = await catQuery3.ToArrayAsync();
 
 // Assert
-Category[] expectedCategories = new[]
-{
-    new Category { Id = 1, Name = "Fruit" }
-};
+Category[] expectedCategories =
+[
+    new Category
+    {
+        Id = 1,
+        Name = "Fruit"
+    }
+];
 
-Assert.Equivalent(expectedCategories, filteredCategoriesMethodGroup);
-Assert.Equivalent(expectedCategories, filteredCategories);
+Assert.Equivalent(expectedCategories, filteredCategories1);
+Assert.Equivalent(expectedCategories, filteredCategories2);
+Assert.Equivalent(expectedCategories, filteredCategories3);
 ```
 
 ### Evaluating Specifications

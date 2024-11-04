@@ -15,7 +15,7 @@ public abstract class Spec<T> : ISpec
 
     public static Spec<T> Create(Expression<Func<T, bool>> expression)
     {
-       return new InlineSpec<T>(expression);
+        return new InlineSpec<T>(expression);
     }
 
     public virtual bool IsSatisfiedBy(T candidate) => GetCompiledExpression()(candidate);
@@ -32,7 +32,7 @@ public abstract class Spec<T> : ISpec
 
     public Spec<T> And(Expression<Func<T, bool>> expression)
     {
-       return new AndSpecForExpression<T>(this, expression);
+        return new AndSpecForExpression<T>(this, expression);
     }
 
     public Spec<T> And(Spec<T> spec)
@@ -252,7 +252,13 @@ file sealed class IsSatisfiedByCallVisitor : ExpressionVisitor
         }
 
         var specExpression = ((ISpec)value).GetExpression();
+        if (node.Arguments[0].NodeType == ExpressionType.MemberAccess)
+        {
+            var body = Expression.Invoke(specExpression, node.Arguments[0]);
+            return body;
+        }
         var paramReplacer = new RebindParameterVisitor(specExpression.Parameters[0], node.Arguments[0]);
+
         var result = (LambdaExpression)paramReplacer.Visit(specExpression)!;
         return result.Body;
     }
