@@ -252,14 +252,17 @@ file sealed class IsSatisfiedByCallVisitor : ExpressionVisitor
         }
 
         var specExpression = ((ISpec)value).GetExpression();
-        if (node.Arguments[0].NodeType == ExpressionType.MemberAccess)
-        {
-            var body = Expression.Invoke(specExpression, node.Arguments[0]);
-            return body;
-        }
+
         var paramReplacer = new RebindParameterVisitor(specExpression.Parameters[0], node.Arguments[0]);
 
-        var result = (LambdaExpression)paramReplacer.Visit(specExpression)!;
-        return result.Body;
+        if (node.Arguments[0].NodeType == ExpressionType.MemberAccess)
+        {
+            var body = paramReplacer.Visit(specExpression.Body)!;
+            return body;
+        }
+
+        var lambda = (LambdaExpression)paramReplacer.Visit(specExpression)!;
+
+        return lambda.Body;
     }
 }
