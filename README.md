@@ -66,7 +66,12 @@ var filteredProducts = await productsQuery.ToArrayAsync();
 // Assert
 Assert.Equivalent(new[] 
 {
-    new Product { Id = 3, Name = "Cherry", Price = 8.0m }
+    new
+    { 
+        Id = 3, 
+        Name = "Cherry", 
+        Price = 8.0m
+    }
 }, filteredProducts);
 ```
 
@@ -86,7 +91,12 @@ var filteredProducts = _context.ProductArray.Where(notBananaAndNotAppleSpec).ToA
 // Assert
 Assert.Equivalent(new[] 
 {
-    new Product { Id = 3, Name = "Cherry", Price = 8.0m }
+    new
+    { 
+        Id = 3, 
+        Name = "Cherry", 
+        Price = 8.0m
+    }
 }, filteredProducts);
 ```
 
@@ -118,14 +128,14 @@ var catQuery3 = _context.Categories.Where(categoryWithAppleProduct);
 var filteredCategories3 = await catQuery3.ToArrayAsync();
 
 // Assert
-Category[] expectedCategories =
-[
-    new Category
+var expectedCategories = new[]
+{
+    new
     {
         Id = 1,
         Name = "Fruit"
     }
-];
+};
 
 Assert.Equivalent(expectedCategories, filteredCategories1);
 Assert.Equivalent(expectedCategories, filteredCategories2);
