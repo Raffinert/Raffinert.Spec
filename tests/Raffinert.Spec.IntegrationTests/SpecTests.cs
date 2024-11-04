@@ -25,8 +25,9 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         // Assert
         Assert.Equivalent(new[]
         {
-            new Product
+            new 
             {
+                CategoryId = 1,
                 Id = 3,
                 Name = "Cherry",
                 Price = 8.0m
@@ -49,8 +50,9 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         // Assert
         Assert.Equivalent(new[]
         {
-            new Product
+            new
             {
+                CategoryId = 1,
                 Id = 3,
                 Name = "Cherry",
                 Price = 8.0m
@@ -73,7 +75,7 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         // Assert
         Assert.Equivalent(new[]
         {
-            new Product
+            new
             {
                 Id = 3,
                 Name = "Cherry",
@@ -96,7 +98,7 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         // Assert
         Assert.Equivalent(new[]
         {
-            new Product
+            new
             {
                 Id = 3,
                 Name = "Cherry",
@@ -131,14 +133,14 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         var filteredCategories3 = await catQuery3.ToArrayAsync();
 
         // Assert
-        Category[] expectedCategories =
-        [
-            new Category
+        var expectedCategories = new[]
+        {
+            new
             {
                 Id = 1,
                 Name = "Fruit"
             }
-        ];
+        };
 
         Assert.Equivalent(expectedCategories, filteredCategories1);
         Assert.Equivalent(expectedCategories, filteredCategories2);
