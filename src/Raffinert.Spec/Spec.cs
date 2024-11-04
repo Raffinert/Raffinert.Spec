@@ -255,14 +255,8 @@ file sealed class IsSatisfiedByCallVisitor : ExpressionVisitor
 
         var paramReplacer = new RebindParameterVisitor(specExpression.Parameters[0], node.Arguments[0]);
 
-        if (node.Arguments[0].NodeType == ExpressionType.MemberAccess)
-        {
-            var body = paramReplacer.Visit(specExpression.Body)!;
-            return body;
-        }
+        var result = paramReplacer.Visit(specExpression.Body)!;
 
-        var lambda = (LambdaExpression)paramReplacer.Visit(specExpression)!;
-
-        return lambda.Body;
+        return result;
     }
 }
