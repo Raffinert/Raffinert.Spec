@@ -115,6 +115,12 @@ var categoryWithBananaProductMethodGroup = Spec<Category>.Create(c => c.Products
 var appleSpec = new ProductNameSpec("Apple");
 var categoryWithAppleProduct = Spec<Category>.Create(c => c.Products.Any(p => appleSpec.IsSatisfiedBy(p)));
 
+var productName = "Apple";
+var categoryWithDynamicProductMethodGroup = Spec<Category>.Create(c => c.Products.Any(new ProductNameSpec(productName).IsSatisfiedBy));
+
+var productName1 = "Banana";
+var categoryWithDynamicProduct = Spec<Category>.Create(c => c.Products.Any(p => new ProductNameSpec(productName1).IsSatisfiedBy(p)));
+
 // Act1
 var catQuery1 = _context.Categories.Where(categoryWithBanana);
 var filteredCategories1 = await catQuery1.ToArrayAsync();
@@ -126,6 +132,14 @@ var filteredCategories2 = await catQuery2.ToArrayAsync();
 // Act3
 var catQuery3 = _context.Categories.Where(categoryWithAppleProduct);
 var filteredCategories3 = await catQuery3.ToArrayAsync();
+
+// Act4
+var catQuery4 = _context.Categories.Where(categoryWithDynamicProductMethodGroup);
+var filteredCategories4 = await catQuery4.ToArrayAsync();
+
+// Act5
+var catQuery5 = _context.Categories.Where(categoryWithDynamicProduct);
+var filteredCategories5 = await catQuery5.ToArrayAsync();
 
 // Assert
 var expectedCategories = new[]
@@ -140,6 +154,8 @@ var expectedCategories = new[]
 Assert.Equivalent(expectedCategories, filteredCategories1);
 Assert.Equivalent(expectedCategories, filteredCategories2);
 Assert.Equivalent(expectedCategories, filteredCategories3);
+Assert.Equivalent(expectedCategories, filteredCategories4);
+Assert.Equivalent(expectedCategories, filteredCategories5);
 ```
 
 ### Evaluating Specifications
@@ -154,3 +170,5 @@ var isSatisfied = bananaSpec.IsSatisfiedBy(new Product { Name = "Banana" }); // 
 ### Debugging
 
 The `Spec<T>` class includes built-in debugging support with a custom debugger display, giving developers an immediate view of the underlying expression while debugging.
+
+See also [Raffinert.Proj](https://github.com/Raffinert/Raffinert.Proj) library;
