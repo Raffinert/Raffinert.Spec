@@ -1,12 +1,12 @@
-﻿using Raffinert.Spec.Debug;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
+using Raffinert.Spec.DebugHelpers;
 
 namespace Raffinert.Spec;
 
 [DebuggerDisplay("{GetExpression()}")]
-[DebuggerTypeProxy(typeof(SpecDebugView<>))]
+[DebuggerTypeProxy(typeof(SpecDebugView))]
 public abstract class Spec<T> : ISpec
 {
     public abstract Expression<Func<T, bool>> GetExpression();
@@ -80,20 +80,32 @@ public abstract class Spec<T> : ISpec
         return false;
     }
 
-    public static implicit operator Expression<Func<T, bool>>(Spec<T> spec)
-    {
-        return spec.GetExpression();
-    }
-
-    public static implicit operator Func<T, bool>(Spec<T> spec)
-    {
-        return spec.GetCompiledExpression();
-    }
-
     private Func<T, bool>? _compiledExpression;
     private Func<T, bool> GetCompiledExpression()
     {
         return _compiledExpression ??= GetExpression().Compile();
+    }
+}
+
+public static class Queryable
+{
+    public static IQueryable<T> Where<T>(this IQueryable<T> source, Spec<T> spec)
+    {
+        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (spec == null) throw new ArgumentNullException(nameof(spec));
+
+        return source.Where(spec.GetExpression());
+    }
+}
+
+public static class Enumerable
+{
+    public static IEnumerable<T> Where<T>(this IEnumerable<T> source, Spec<T> spec)
+    {
+        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (spec == null) throw new ArgumentNullException(nameof(spec));
+
+        return source.Where(spec.IsSatisfiedBy);
     }
 }
 
@@ -205,27 +217,12 @@ file sealed class IsSatisfiedByCallVisitor : ExpressionVisitor
         if (node.Operand is not MethodCallExpression mcx
             || mcx.Method.Name != nameof(Delegate.CreateDelegate)
             || mcx.Arguments.Count != 2
-            || mcx.Arguments[1] is not MemberExpression memberExpr)
+            || GetInnerExpression(mcx.Arguments[1]) is not { } innerSpecExpression)
         {
             return base.VisitUnary(node);
         }
 
-        if (memberExpr is not { Expression: ConstantExpression constantExpression, Member: FieldInfo fieldInfo })
-        {
-            return base.VisitUnary(node);
-        }
-
-        var container = constantExpression.Value;
-        var value = fieldInfo.GetValue(container);
-
-        if (!typeof(ISpec).IsAssignableFrom(value.GetType()))
-        {
-            return base.VisitUnary(node);
-        }
-
-        var specExpression = ((ISpec)value).GetExpression();
-
-        return specExpression;
+        return innerSpecExpression;
     }
 
     protected override Expression VisitMethodCall(MethodCallExpression node)
@@ -233,30 +230,56 @@ file sealed class IsSatisfiedByCallVisitor : ExpressionVisitor
         if (node.Method.DeclaringType?.IsGenericType != true
             || node.Method.DeclaringType?.GetGenericTypeDefinition() != typeof(Spec<>)
             || node.Method.Name != nameof(Spec<object>.IsSatisfiedBy)
-            || node.Object is not MemberExpression memberExpr)
+            || GetInnerExpression(node.Object) is not {} innerSpecExpression)
         {
             return base.VisitMethodCall(node);
         }
 
-        if (memberExpr is not { Expression: ConstantExpression constantExpression, Member: FieldInfo fieldInfo })
-        {
-            return base.VisitMethodCall(node);
-        }
+        var paramReplacer = new RebindParameterVisitor(innerSpecExpression.Parameters[0], node.Arguments[0]);
 
-        var container = constantExpression.Value;
-        var value = fieldInfo.GetValue(container);
-
-        if (!typeof(ISpec).IsAssignableFrom(value.GetType()))
-        {
-            return base.VisitMethodCall(node);
-        }
-
-        var specExpression = ((ISpec)value).GetExpression();
-
-        var paramReplacer = new RebindParameterVisitor(specExpression.Parameters[0], node.Arguments[0]);
-
-        var result = paramReplacer.Visit(specExpression.Body)!;
+        var result = paramReplacer.Visit(innerSpecExpression.Body)!;
 
         return result;
+    }
+
+    private static LambdaExpression? GetInnerExpression(Expression? expression)
+    {
+        MemberExpression? memberExpr = null;
+        NewExpression? newExpr = null;
+
+        switch (expression)
+        {
+            case MemberExpression mex:
+                memberExpr = mex;
+                break;
+            case NewExpression nex:
+                newExpr = nex;
+                break;
+            default:
+                return null;
+        }
+
+        if (newExpr != null && !typeof(ISpec).IsAssignableFrom(newExpr.Type))
+        {
+            return null;
+        }
+
+        ISpec? value;
+
+        if (newExpr != null)
+        {
+            value = Expression.Lambda(newExpr).Compile().DynamicInvoke() as ISpec;
+        }
+        else if (memberExpr is { Expression: ConstantExpression constantExpression, Member: FieldInfo fieldInfo })
+        {
+            var container = constantExpression.Value;
+            value = fieldInfo.GetValue(container) as ISpec;
+        }
+        else
+        {
+            return null;
+        }
+
+        return value?.GetExpression();
     }
 }

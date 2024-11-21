@@ -5,12 +5,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<Version>1.5.3</Version>
+	<Version>1.5.5</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<LangVersion>latest</LangVersion>
 	<AssemblyName>Raffinert.Spec</AssemblyName>
-	<AssemblyVersion>1.5.3</AssemblyVersion>
-	<FileVersion>1.5.3</FileVersion>
+	<AssemblyVersion>1.5.5</AssemblyVersion>
+	<FileVersion>1.5.5</FileVersion>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

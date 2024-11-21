@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 
-namespace Raffinert.Spec.Debug;
+namespace Raffinert.Spec.DebugHelpers;
 
-internal class SpecDebugView<T>(Spec<T> spec)
+internal class SpecDebugView(ISpec spec)
 {
-    public Expression<Func<T, bool>> Expression => spec.GetExpression();
+    public LambdaExpression Expression => spec.GetExpression();
 }
