@@ -14,7 +14,7 @@
 
 1. **Cleaner IDE**: `Raffinert.Spec` doesn't add any extension methods to common classes like `object` or `Expression<Func<TEntity, bool>>`. This means you won't see a lot of extra options in your IntelliSense.
 
-2. **Simple Design**: All the 'magic' is incapsulated inside the Spec<T> and then can be explicitly or implicitly converted to Expression<Func<TEntity, bool>>. No Includes, Paginations and other extra features.
+2. **Simple Design**: All the 'magic' is encapsulated inside the Spec<T> and then can be explicitly or implicitly converted to Expression<Func<TEntity, bool>>. No Includes, Paginations and other extra features.
 
 3. **Flexible Use**: It supports a mixed approach by allowing the use of separate specification classes as well as inline specifications. This makes it easy to combine expressions, including nested items, with no fragile code.
 
