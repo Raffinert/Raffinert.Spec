@@ -66,7 +66,7 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         // Arrange
         var bananaSpec = Spec<Product>.Create(p => p.Name == "Banana");
         var bananaOrAppleSpec = bananaSpec.Or(p => p.Name == "Apple");
-        var notBananaAndNotAppleSpec = !bananaOrAppleSpec;
+        var notBananaAndNotAppleSpec = bananaOrAppleSpec.Not();
 
         // Act
         var productsQuery = _context.Products.Where(notBananaAndNotAppleSpec);
@@ -90,7 +90,7 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         // Arrange
         var bananaSpec = Spec<Product>.Create(p => p.Name == "Banana");
         var bananaOrAppleSpec = bananaSpec.Or(p => p.Name == "Apple");
-        var notBananaAndNotAppleSpec = !bananaOrAppleSpec;
+        var notBananaAndNotAppleSpec = bananaOrAppleSpec.Not();
 
         // Act
         var filteredProducts = _context.ProductArray.Where(notBananaAndNotAppleSpec).ToArray();
