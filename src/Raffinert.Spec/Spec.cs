@@ -1,17 +1,18 @@
-﻿using System.Diagnostics;
+﻿using Raffinert.Spec.DebugHelpers;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using Raffinert.Spec.DebugHelpers;
 
 namespace Raffinert.Spec;
 
-[DebuggerDisplay("{GetExpression()}")]
+[DebuggerDisplay("{GetExpandedExpression()}")]
 [DebuggerTypeProxy(typeof(SpecDebugView))]
 public abstract class Spec<T> : ISpec
 {
     public abstract Expression<Func<T, bool>> GetExpression();
 
     LambdaExpression ISpec.GetExpression() => GetExpression();
+    LambdaExpression ISpec.GetExpandedExpression() => GetExpandedExpression();
 
     public static Spec<T> Create(Expression<Func<T, bool>> expression)
     {
@@ -85,6 +86,13 @@ public abstract class Spec<T> : ISpec
     {
         return _compiledExpression ??= GetExpression().Compile();
     }
+
+    private Expression<Func<T, bool>>? _expandedExpression;
+
+    public Expression<Func<T, bool>> GetExpandedExpression()
+    {
+        return _expandedExpression ??= (Expression<Func<T, bool>>)new IsSatisfiedByCallVisitor().Visit(GetExpression())!;
+    }
 }
 
 public static class Queryable
@@ -94,7 +102,7 @@ public static class Queryable
         if (source == null) throw new ArgumentNullException(nameof(source));
         if (spec == null) throw new ArgumentNullException(nameof(spec));
 
-        return source.Where(spec.GetExpression());
+        return source.Where(spec.GetExpandedExpression());
     }
 }
 
@@ -112,6 +120,7 @@ public static class Enumerable
 internal interface ISpec
 {
     LambdaExpression GetExpression();
+    LambdaExpression GetExpandedExpression();
 }
 
 file sealed class TrueSpec<T> : Spec<T>
@@ -128,7 +137,7 @@ file sealed class InlineSpec<T>(Expression<Func<T, bool>> expression) : Spec<T>
 {
     public override Expression<Func<T, bool>> GetExpression()
     {
-        return (Expression<Func<T, bool>>)new IsSatisfiedByCallVisitor().Visit(expression)!;
+        return expression;
     }
 }
 
@@ -145,8 +154,7 @@ file sealed class AndSpecForExpression<T>(Spec<T> leftSpec, Expression<Func<T, b
 {
     public override Expression<Func<T, bool>> GetExpression()
     {
-        var rewrittenRightExpression = (Expression<Func<T, bool>>)new IsSatisfiedByCallVisitor().Visit(rightExpression)!;
-        return ExpressionBuilder.BuildAndExpression(leftSpec.GetExpression(), rewrittenRightExpression);
+        return ExpressionBuilder.BuildAndExpression(leftSpec.GetExpression(), rightExpression);
     }
 }
 file sealed class NotSpec<T>(Spec<T> spec) : Spec<T>
@@ -170,8 +178,7 @@ file sealed class OrSpecForExpression<T>(Spec<T> leftSpec, Expression<Func<T, bo
 {
     public override Expression<Func<T, bool>> GetExpression()
     {
-        var rewrittenRightExpression = (Expression<Func<T, bool>>)new IsSatisfiedByCallVisitor().Visit(rightExpression)!;
-        return ExpressionBuilder.BuildOrExpression(leftSpec.GetExpression(), rewrittenRightExpression);
+        return ExpressionBuilder.BuildOrExpression(leftSpec.GetExpression(), rightExpression);
     }
 }
 
@@ -230,7 +237,7 @@ file sealed class IsSatisfiedByCallVisitor : ExpressionVisitor
         if (node.Method.DeclaringType?.IsGenericType != true
             || node.Method.DeclaringType?.GetGenericTypeDefinition() != typeof(Spec<>)
             || node.Method.Name != nameof(Spec<object>.IsSatisfiedBy)
-            || GetInnerExpression(node.Object) is not {} innerSpecExpression)
+            || GetInnerExpression(node.Object) is not { } innerSpecExpression)
         {
             return base.VisitMethodCall(node);
         }
