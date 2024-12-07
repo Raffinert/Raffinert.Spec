@@ -83,7 +83,7 @@ You can also define specifications using methods:
 // Arrange
 var bananaSpec = Spec<Product>.Create(p => p.Name == "Banana");
 var bananaOrAppleSpec = bananaSpec.Or(p => p.Name == "Apple"); // OR specification
-var notBananaAndNotAppleSpec = !bananaOrAppleSpec; // NOT specification
+var notBananaAndNotAppleSpec = bananaOrAppleSpec.Not(); // NOT specification
 
 // Act
 var filteredProducts = _context.ProductArray.Where(notBananaAndNotAppleSpec).ToArray();
