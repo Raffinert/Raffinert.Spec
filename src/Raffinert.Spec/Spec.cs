@@ -95,28 +95,6 @@ public abstract class Spec<T> : ISpec
     }
 }
 
-public static class Queryable
-{
-    public static IQueryable<T> Where<T>(this IQueryable<T> source, Spec<T> spec)
-    {
-        if (source == null) throw new ArgumentNullException(nameof(source));
-        if (spec == null) throw new ArgumentNullException(nameof(spec));
-
-        return source.Where(spec.GetExpandedExpression());
-    }
-}
-
-public static class Enumerable
-{
-    public static IEnumerable<T> Where<T>(this IEnumerable<T> source, Spec<T> spec)
-    {
-        if (source == null) throw new ArgumentNullException(nameof(source));
-        if (spec == null) throw new ArgumentNullException(nameof(spec));
-
-        return source.Where(spec.IsSatisfiedBy);
-    }
-}
-
 internal interface ISpec
 {
     LambdaExpression GetExpression();
@@ -287,6 +265,6 @@ file sealed class IsSatisfiedByCallVisitor : ExpressionVisitor
             return null;
         }
 
-        return value?.GetExpression();
+        return value?.GetExpandedExpression();
     }
 }

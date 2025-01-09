@@ -1,3 +1,4 @@
+using AgileObjects.ReadableExpressions;
 using Microsoft.EntityFrameworkCore;
 using Raffinert.Spec.IntegrationTests.Infrastructure;
 using Raffinert.Spec.IntegrationTests.Model;
@@ -25,7 +26,7 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         // Assert
         Assert.Equivalent(new[]
         {
-            new 
+            new
             {
                 CategoryId = 1,
                 Id = 3,
@@ -33,6 +34,9 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
                 Price = 8.0m
             }
         }, filteredProducts);
+
+        Assert.Equal("p => !((p.Name == \"Banana\") || (p.Name == <name>P))",
+            notBananaAndNotAppleSpec.GetExpression().ToReadableString());
     }
 
     [Fact]
@@ -58,6 +62,9 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
                 Price = 8.0m
             }
         }, filteredProducts);
+
+        Assert.Equal("p => !((p.Name == \"Banana\") || (p.Name == <name>P))",
+            notBananaAndNotAppleSpec.GetExpression().ToReadableString());
     }
 
     [Fact]
@@ -82,6 +89,9 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
                 Price = 8.0m
             }
         }, filteredProducts);
+
+        Assert.Equal("p => !((p.Name == \"Banana\") || (p.Name == \"Apple\"))",
+            notBananaAndNotAppleSpec.GetExpression().ToReadableString());
     }
 
     [Fact]
@@ -105,10 +115,13 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
                 Price = 8.0m
             }
         }, filteredProducts);
+
+        Assert.Equal("p => !((p.Name == \"Banana\") || (p.Name == \"Apple\"))",
+            notBananaAndNotAppleSpec.GetExpression().ToReadableString());
     }
 
     [Fact]
-    public async Task ComplexSpecificationComposition()
+    public async Task NestedSpecifications()
     {
         // Arrange
         var bananaStringSpec = Spec<string>.Create(n => n == "Banana");
@@ -125,6 +138,8 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
 
         var productName1 = "Banana";
         var categoryWithDynamicProduct = Spec<Category>.Create(c => c.Products.Any(p => new ProductNameSpec(productName1).IsSatisfiedBy(p)));
+
+        var categoryNestedSpec = new CategorySpec(productName1);
 
         // Act1
         var catQuery1 = _context.Categories.Where(categoryWithBanana);
@@ -146,7 +161,29 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         var catQuery5 = _context.Categories.Where(categoryWithDynamicProduct);
         var filteredCategories5 = await catQuery5.ToArrayAsync();
 
+        // Act6
+        var catQuery6 = _context.Categories.Where(categoryNestedSpec);
+        var filteredCategories6 = await catQuery6.ToArrayAsync();
+
         // Assert
+        Assert.Equal("c => c.Products.Any(p => p.Name == \"Banana\")",
+            categoryWithBanana.GetExpandedExpression().ToReadableString());
+
+        Assert.Equal("c => c.Products.Any(p => p.Name == \"Banana\")",
+            categoryWithBananaProductMethodGroup.GetExpandedExpression().ToReadableString());
+
+        Assert.Equal("c => c.Products.Any(p => p.Name == <name>P)",
+            categoryWithAppleProduct.GetExpandedExpression().ToReadableString());
+
+        Assert.Equal("c => c.Products.Any(p => p.Name == <name>P)",
+            categoryWithDynamicProductMethodGroup.GetExpandedExpression().ToReadableString());
+
+        Assert.Equal("c => c.Products.Any(p => p.Name == <name>P)",
+            categoryWithDynamicProduct.GetExpandedExpression().ToReadableString());
+
+        Assert.Equal("c => c.Products.Any(p => p.Name == <name>P)",
+            categoryNestedSpec.GetExpandedExpression().ToReadableString());
+
         var expectedCategories = new[]
         {
             new
@@ -161,6 +198,7 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         Assert.Equivalent(expectedCategories, filteredCategories3);
         Assert.Equivalent(expectedCategories, filteredCategories4);
         Assert.Equivalent(expectedCategories, filteredCategories5);
+        Assert.Equivalent(expectedCategories, filteredCategories6);
     }
 
     private class ProductNameSpec(string name) : Spec<Product>
@@ -168,6 +206,16 @@ public class SpecTests(ProductFilterFixture fixture) : IClassFixture<ProductFilt
         public override Expression<Func<Product, bool>> GetExpression()
         {
             return p => p.Name == name;
+        }
+    }
+
+    private class CategorySpec(string productName) : Spec<Category>
+    {
+        private readonly Spec<Product> _productSpec = new ProductNameSpec(productName);
+
+        public override Expression<Func<Category, bool>> GetExpression()
+        {
+            return c => c.Products.Any(_productSpec.IsSatisfiedBy);
         }
     }
 }

@@ -100,7 +100,7 @@ Assert.Equivalent(new[]
 }, filteredProducts);
 ```
 
-### Complex Specification Composition
+### Nested Specifications
 
 You can also compose specifications across multiple entities, as shown in the following example:
 
