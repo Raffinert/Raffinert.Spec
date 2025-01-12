@@ -1,11 +1,12 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Raffinert.Spec.IntegrationTests.Generated;
 
 namespace Raffinert.Spec.IntegrationTests.Infrastructure;
 
 public class ProductFilterFixture : IDisposable
 {
-    public TestDbContext Context { get; }
+    public IReadOnlyTestDbContext Context { get; }
     private readonly SqliteConnection _connection;
 
     public ProductFilterFixture()
@@ -13,13 +14,16 @@ public class ProductFilterFixture : IDisposable
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open();
 
-        var options = new DbContextOptionsBuilder<TestDbContext>()
+        var options = new DbContextOptionsBuilder<ReadOnlyTestDbContext>()
+            // Option1
+            //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution)
             .UseSqlite(_connection)
             .Options;
 
-        Context = new TestDbContext(options);
-
-        Context.Database.EnsureCreated();
+        var context = new ReadOnlyTestDbContext(options);
+        context.Database.EnsureCreated();
+        Context = context;
     }
 
     public void Dispose()
