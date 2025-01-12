@@ -15,6 +15,7 @@ public class ProductFilterFixture : IDisposable
         _connection.Open();
 
         var options = new DbContextOptionsBuilder<ReadOnlyTestDbContext>()
+            // see https://stackoverflow.com/questions/55983982/asp-net-core-2-2-returns-notsupportedexception-collection-was-of-a-fixed-size
             // Option1
             //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
             //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution)
