@@ -57,7 +57,7 @@ Specification templates allow you to define reusable structures that can be adap
 #### Example: Creating and Adapting a Specification Template
 
 ```csharp
-var template = SpecTemplate<Product>.Create(p => new { p.Name, p.Price }, t => t.Price > 10);
+var template = SpecTemplate<Product>.Create(p => new { p.Name, p.Price }, t => t.Name == "Banana" && t.Price > 10);
 var adaptedSpec = template.Adapt<InventoryItem>();
 ```
 
