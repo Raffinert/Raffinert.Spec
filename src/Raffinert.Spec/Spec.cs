@@ -181,17 +181,6 @@ file static class ExpressionBuilder
     }
 }
 
-file sealed class RebindParameterVisitor(ParameterExpression oldParameter, Expression newParameter)
-    : ExpressionVisitor
-{
-    protected override Expression VisitParameter(ParameterExpression node)
-    {
-        return node == oldParameter
-            ? newParameter
-            : base.VisitParameter(node);
-    }
-}
-
 file sealed class IsSatisfiedByCallVisitor : ExpressionVisitor
 {
     // Visits method group expressions like `Spec<Category>.Create(category => category.Products.Any(productSpec.IsSatisfiedBy))`

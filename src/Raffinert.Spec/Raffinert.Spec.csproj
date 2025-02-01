@@ -5,12 +5,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<Version>1.6.1</Version>
+	<Version>1.7.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<LangVersion>latest</LangVersion>
 	<AssemblyName>Raffinert.Spec</AssemblyName>
-	<AssemblyVersion>1.6.1</AssemblyVersion>
-	<FileVersion>1.6.1</FileVersion>
+	<AssemblyVersion>1.7.0</AssemblyVersion>
+	<FileVersion>1.7.0</FileVersion>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -20,7 +20,7 @@
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<RepositoryUrl>https://github.com/Raffinert/Spec.git</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
-	<PackageTags>Specification, Spec</PackageTags>
+	<PackageTags>Specification,Template, Spec</PackageTags>
 	<NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
   
