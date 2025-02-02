@@ -68,7 +68,7 @@ In this example, a specification template is created for `Product`, filtering ba
 
 ### **Roslyn Analyzers for Compile-Time Validation**
 
-To prevent runtime errors when using `SpecTemplate`, we provide [Roslyn Raffinert.Spec.Analyzer](https://github.com/Raffinert/Raffinert.Spec/src/Raffinert.Spec.Analyzer) that:
+To prevent runtime errors when using `SpecTemplate`, we provide Roslyn [Raffinert.Spec.Analyzer](https://github.com/Raffinert/Raffinert.Spec/tree/main/src/Raffinert.Spec.Analyzer) that:
 
 - Ensure `SpecTemplate<TSample>.Adapt<TN>()` only adapts to types that contain all required members.
 - Validate that `SpecTemplate.Create(...)` uses an anonymous type projection (e.g., `p => new { p.Name }`).
