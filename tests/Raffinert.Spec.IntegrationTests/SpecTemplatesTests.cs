@@ -65,10 +65,10 @@ public class SpecTemplatesTests(ProductFilterFixture fixture) : IClassFixture<Pr
             }
         }, filteredProducts);
 
-        Assert.Equal("cat => cat.Name == \"Banana\"",
+        Assert.Equal("cat => (cat.Name == \"Banana\") && (cat.Id > 0)",
             categorySpec.GetExpandedExpression().ToReadableString());
 
-        Assert.Equal("prod => prod.Name == \"Banana\"",
+        Assert.Equal("prod => (prod.Name == \"Banana\") && (prod.Id > 0)",
             productSpec.GetExpandedExpression().ToReadableString());
     }
 }
