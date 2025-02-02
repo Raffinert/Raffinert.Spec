@@ -1,21 +1,21 @@
 using AgileObjects.ReadableExpressions;
+using Raffinert.Spec.IntegrationTests.Generated;
 using Raffinert.Spec.IntegrationTests.Infrastructure;
-using Raffinert.Spec.IntegrationTests.Model;
 
 namespace Raffinert.Spec.IntegrationTests;
 
 public class SpecTemplatesTests(ProductFilterFixture fixture) : IClassFixture<ProductFilterFixture>
 {
-    private readonly TestDbContext _context = fixture.Context;
+    private readonly IReadOnlyTestDbContext _context = fixture.Context;
 
     [Fact]
     public void SingleLineTemplate()
     {
         // Arrange
-        var specTemplate = SpecTemplate<Product>.Create(p => new { p.Name }, arg => arg.Name == "Banana");
+        var specTemplate = SpecTemplate<ReadOnlyProduct>.Create(p => new { p.Name }, arg => arg.Name == "Banana");
 
-        var categorySpec = specTemplate.Adapt<Category>();
-        var productSpec = specTemplate.Adapt<Product>();
+        var categorySpec = specTemplate.Adapt<ReadOnlyCategory>();
+        var productSpec = specTemplate.Adapt<ReadOnlyProduct>();
 
         // Act
         var filteredProducts = _context.Products.Where(productSpec).ToArray();
@@ -44,12 +44,12 @@ public class SpecTemplatesTests(ProductFilterFixture fixture) : IClassFixture<Pr
         // Arrange
         var bananaStringSpec = Spec<string>.Create(n => n == "Banana");
 
-        var specTemplate = SpecTemplate<Product>.Create(
+        var specTemplate = SpecTemplate<ReadOnlyProduct>.Create(
             p => new { p.Name, p.Id },
             arg => bananaStringSpec.IsSatisfiedBy(arg.Name) && arg.Id > 0);
 
-        var categorySpec = specTemplate.Adapt<Category>("cat");
-        var productSpec = specTemplate.Adapt<Product>("prod");
+        var categorySpec = specTemplate.Adapt<ReadOnlyCategory>("cat");
+        var productSpec = specTemplate.Adapt<ReadOnlyProduct>("prod");
 
         // Act
         var filteredProducts = _context.Products.Where(productSpec).ToArray();
