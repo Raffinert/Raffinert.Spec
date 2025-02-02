@@ -7,6 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raffinert.Spec", "src\Raffi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raffinert.Spec.IntegrationTests", "tests\Raffinert.Spec.IntegrationTests\Raffinert.Spec.IntegrationTests.csproj", "{13628080-1CA4-42E1-A426-57202293ACD0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raffinert.Spec.Analyzer", "src\Raffinert.Spec.Analyzer\Raffinert.Spec.Analyzer.csproj", "{AB85F4C2-9F4D-4ACA-8493-4CDB74AD507D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raffinert.Spec.Analyzer.Test", "tests\Raffinert.Spec.Analyzer.Test\Raffinert.Spec.Analyzer.Test.csproj", "{4E8B769F-0401-4469-A47F-ED88F0615561}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{58D60380-A3B5-481D-BA63-5F9278CE1337}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,9 +27,21 @@ Global
 		{13628080-1CA4-42E1-A426-57202293ACD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13628080-1CA4-42E1-A426-57202293ACD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13628080-1CA4-42E1-A426-57202293ACD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB85F4C2-9F4D-4ACA-8493-4CDB74AD507D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB85F4C2-9F4D-4ACA-8493-4CDB74AD507D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB85F4C2-9F4D-4ACA-8493-4CDB74AD507D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB85F4C2-9F4D-4ACA-8493-4CDB74AD507D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E8B769F-0401-4469-A47F-ED88F0615561}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E8B769F-0401-4469-A47F-ED88F0615561}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E8B769F-0401-4469-A47F-ED88F0615561}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E8B769F-0401-4469-A47F-ED88F0615561}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{13628080-1CA4-42E1-A426-57202293ACD0} = {58D60380-A3B5-481D-BA63-5F9278CE1337}
+		{4E8B769F-0401-4469-A47F-ED88F0615561} = {58D60380-A3B5-481D-BA63-5F9278CE1337}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AE424779-431F-4F22-BF55-803001BBDB26}
