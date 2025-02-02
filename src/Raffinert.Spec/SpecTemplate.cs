@@ -12,11 +12,12 @@ public static class SpecTemplate<TSample>
     }
 }
 
-public class SpecTemplate<TSample, TTemplate>
+public class SpecTemplate<TSample, TTemplate> : ISpecTemplate<TTemplate>
 {
     public Expression<Func<TSample, TTemplate>> template { get; }
     public MemberExpression[] templateMemberExpressions { get; set; }
-    public Expression<Func<TTemplate, bool>> expression { get; }
+    public Expression<Func<TTemplate, bool>>? expression { get; }
+    private Expression<Func<TSample, bool>>? combinedExpression { get; set; }
 
     public SpecTemplate(Expression<Func<TSample, TTemplate>> template, Expression<Func<TTemplate, bool>> expression)
     {
@@ -29,6 +30,15 @@ public class SpecTemplate<TSample, TTemplate>
                 if (mex.Length != ne.Arguments.Count) throw new ArgumentException("Template must be a NewExpression with MemberExpressions only", nameof(template));
                 this.expression = expression;
                 break;
+            case MemberInitExpression me:
+                combinedExpression = CombineExpressions(template, expression);
+                mex = me.Bindings.Select(x => (x as MemberAssignment)?.Expression as MemberExpression).OfType<MemberExpression>().ToArray();
+                if (mex.Length != me.Bindings.Count) throw new ArgumentException("Template must be a NewExpression with MemberExpressions only", nameof(template));
+                var propsWithDifferentNames = me.Bindings.Where(x => ((MemberExpression)((MemberAssignment)x).Expression).Member.Name != x.Member.Name).ToArray();
+                if(propsWithDifferentNames.Length > 0)
+                    throw new ArgumentException("Template member names must match the target type", nameof(template));
+                this.expression = expression;
+                break;
             default:
                 throw new ArgumentException("Template must be a NewExpression", nameof(template));
         }
@@ -37,12 +47,23 @@ public class SpecTemplate<TSample, TTemplate>
         this.template = template;
     }
 
+    private static Expression<Func<TInput, TResult>> CombineExpressions<TInput, TIntermediate, TResult>(
+        Expression<Func<TInput, TIntermediate>> exp1,
+        Expression<Func<TIntermediate, TResult>> exp2)
+    {
+        var newParameter = Expression.Parameter(typeof(TInput), exp2.Parameters[0].Name);
+        var updatedExp1Body = new RebindParameterVisitor(exp1.Parameters[0], newParameter).Visit(exp1.Body);
+        var updatedExp2Body = new RebindParameterVisitor(exp2.Parameters[0], updatedExp1Body!).Visit(exp2.Body);
+        return Expression.Lambda<Func<TInput, TResult>>(updatedExp2Body!, newParameter);
+    }
 
     public Spec<TN> Adapt<TN>(string? newParameterName = null)
     {
         ValidateTypeSignature<TN>();
 
-        var adaptedExpression = Convert<TTemplate, TN, bool>(expression, newParameterName);
+        var adaptedExpression = expression != null
+            ? Convert<TTemplate, TN, bool>(expression, newParameterName)
+            : Convert<TSample, TN, bool>(combinedExpression!, newParameterName);
 
         return Spec<TN>.Create(adaptedExpression);
     }
@@ -110,4 +131,9 @@ public class SpecTemplate<TSample, TTemplate>
             return base.VisitMember(node);
         }
     }
+}
+
+public interface ISpecTemplate<TTemplate>
+{
+    Spec<TN> Adapt<TN>(string? newParameterName = null);
 }
