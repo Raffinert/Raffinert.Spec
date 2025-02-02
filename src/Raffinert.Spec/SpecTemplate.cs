@@ -16,8 +16,7 @@ public class SpecTemplate<TSample, TTemplate>
 {
     public Expression<Func<TSample, TTemplate>> template { get; }
     public MemberExpression[] templateMemberExpressions { get; set; }
-    public Expression<Func<TTemplate, bool>>? expression { get; }
-    private Expression<Func<TSample, bool>>? combinedExpression { get; set; }
+    public Expression<Func<TTemplate, bool>> expression { get; }
 
     public SpecTemplate(Expression<Func<TSample, TTemplate>> template, Expression<Func<TTemplate, bool>> expression)
     {
@@ -30,12 +29,8 @@ public class SpecTemplate<TSample, TTemplate>
                 if (mex.Length != ne.Arguments.Count) throw new ArgumentException("Template must be a NewExpression with MemberExpressions only", nameof(template));
                 this.expression = expression;
                 break;
-            case MemberExpression mex0:
-                mex = [mex0];
-                combinedExpression = CombineExpressions(template, expression);
-                break;
             default:
-                throw new ArgumentException("Template must be either a NewExpression or MemberExpression", nameof(template));
+                throw new ArgumentException("Template must be a NewExpression", nameof(template));
         }
 
         templateMemberExpressions = mex;
@@ -43,24 +38,11 @@ public class SpecTemplate<TSample, TTemplate>
     }
 
 
-    private static Expression<Func<TInput, TResult>> CombineExpressions<TInput, TIntermediate, TResult>(
-        Expression<Func<TInput, TIntermediate>> exp1,
-        Expression<Func<TIntermediate, TResult>> exp2)
-    {
-        var newParameter = Expression.Parameter(typeof(TInput), exp2.Parameters[0].Name);
-        var updatedExp1Body = new RebindParameterVisitor(exp1.Parameters[0], newParameter).Visit(exp1.Body);
-        var updatedExp2Body = new RebindParameterVisitor(exp2.Parameters[0], updatedExp1Body!).Visit(exp2.Body);
-
-        return Expression.Lambda<Func<TInput, TResult>>(updatedExp2Body!, newParameter);
-    }
-
     public Spec<TN> Adapt<TN>(string? newParameterName = null)
     {
         ValidateTypeSignature<TN>();
 
-        var adaptedExpression = expression != null 
-            ? Convert<TTemplate, TN, bool>(expression, newParameterName) 
-            : Convert<TSample, TN, bool>(combinedExpression!, newParameterName);
+        var adaptedExpression = Convert<TTemplate, TN, bool>(expression, newParameterName);
 
         return Spec<TN>.Create(adaptedExpression);
     }
@@ -103,7 +85,7 @@ public class SpecTemplate<TSample, TTemplate>
         return expression;
     }
 
-    public class ParameterTypeVisitor(ParameterExpression oldParameter, ParameterExpression newParameter)
+    private class ParameterTypeVisitor(ParameterExpression oldParameter, ParameterExpression newParameter)
         : ExpressionVisitor
     {
         protected override Expression VisitParameter(ParameterExpression node)
