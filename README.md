@@ -3,6 +3,9 @@
 # Raffinert.Spec
 [![NuGet version (Raffinert.Spec)](https://img.shields.io/nuget/v/Raffinert.Spec.svg?style=flat-square)](https://www.nuget.org/packages/Raffinert.Spec/)
 
+
+# Raffinert.Spec
+
 `Raffinert.Spec` is a rethinking of libraries and sources such as:
 
 - [NSpecifications](https://github.com/miholler/NSpecifications)
@@ -63,28 +66,14 @@ var adaptedSpec = template.Adapt<InventoryItem>();
 
 In this example, a specification template is created for `Product`, filtering based on `Name` and `Price`. The template is then adapted to an `InventoryItem` type with matching properties.
 
-#### Implementation Details
+### **Roslyn Analyzers for Compile-Time Validation**
 
-A `SpecTemplate<TSample, TTemplate>` allows creating reusable specifications where `TTemplate` is a projection of `TSample`. The `Adapt<TN>()` method transforms the template to another type `TN` with compatible properties.
+To prevent runtime errors when using `SpecTemplate`, we provide [Roslyn Raffinert.Spec.Analyzer](https://github.com/Raffinert/Raffinert.Spec/src/Raffinert.Spec.Analyzer) that:
 
-```csharp
-public class SpecTemplate<TSample, TTemplate>
-{
-    public Expression<Func<TSample, TTemplate>> template { get; }
-    public Expression<Func<TTemplate, bool>>? expression { get; }
+- Ensure `SpecTemplate<TSample>.Adapt<TN>()` only adapts to types that contain all required members.
+- Validate that `SpecTemplate.Create(...)` uses an anonymous type projection (e.g., `p => new { p.Name }`).
 
-    public SpecTemplate(Expression<Func<TSample, TTemplate>> template, Expression<Func<TTemplate, bool>> expression)
-    {
-        this.template = template;
-        this.expression = expression;
-    }
-
-    public Spec<TN> Adapt<TN>()
-    {
-        return Spec<TN>.Create(ConvertExpression(expression));
-    }
-}
-```
+These analyzers catch issues at compile-time, improving reliability and maintainability.
 
 ### Debugging
 

@@ -12,9 +12,7 @@ public class SpecTemplatesTests(ProductFilterFixture fixture) : IClassFixture<Pr
     public void SingleLineTemplate()
     {
         // Arrange
-        var specTemplate = SpecTemplate<Product>.Create(
-            p => p.Name, 
-            arg => arg == "Banana");
+        var specTemplate = SpecTemplate<Product>.Create(p => new { p.Name }, arg => arg.Name == "Banana");
 
         var categorySpec = specTemplate.Adapt<Category>();
         var productSpec = specTemplate.Adapt<Product>();
