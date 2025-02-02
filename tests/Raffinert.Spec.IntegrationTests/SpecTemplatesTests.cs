@@ -71,4 +71,44 @@ public class SpecTemplatesTests(ProductFilterFixture fixture) : IClassFixture<Pr
         Assert.Equal("prod => (prod.Name == \"Banana\") && (prod.Id > 0)",
             productSpec.GetExpandedExpression().ToReadableString());
     }
+
+    [Fact]
+    public void NonAnonymousMultiLineTemplate()
+    {
+        // Arrange
+        var bananaStringSpec = Spec<string>.Create(n => n == "Banana");
+
+        ISpecTemplate<Template> specTemplate = SpecTemplate<Product>.Create(
+            p => new Template { Name = p.Name, Id = p.Id },
+            arg => bananaStringSpec.IsSatisfiedBy(arg.Name) && arg.Id > 0);
+
+        var categorySpec = specTemplate.Adapt<Category>("cat");
+        var productSpec = specTemplate.Adapt<Product>("prod");
+
+        // Act
+        var filteredProducts = _context.Products.Where(productSpec).ToArray();
+
+        // Assert
+        Assert.Equivalent(new[]
+        {
+            new
+            {
+                Id = 2,
+                Name = "Banana",
+                Price = 15.0m
+            }
+        }, filteredProducts);
+
+        Assert.Equal("cat => (cat.Name == \"Banana\") && (cat.Id > 0)",
+            categorySpec.GetExpandedExpression().ToReadableString());
+
+        Assert.Equal("prod => (prod.Name == \"Banana\") && (prod.Id > 0)",
+            productSpec.GetExpandedExpression().ToReadableString());
+    }
+
+    class Template
+    {
+        public int Id { get; init; }
+        public required string Name { get; init; }
+    }
 }
