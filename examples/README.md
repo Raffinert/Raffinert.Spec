@@ -45,7 +45,7 @@ context.Database.EnsureCreated();
 
 ### **Comparison of LINQKit and Spec**
 
-We execute four different queries to compare their behavior:
+We execute multiple queries to compare their behavior:
 
 #### **1. LINQKit: OR Condition with PredicateBuilder**
 
@@ -106,35 +106,33 @@ static IQueryable<Guest> NestedConditionsWithSpec(MyHotelDbContext context)
 - Uses `GetExpandedExpression()` to evaluate nested expressions **without EF-specific modifications**.
 - Maintains **full LINQ compatibility**.
 
-### **Executing the Comparisons**
+#### **5. LINQKit: Query Syntax**
 
-We dynamically execute each query and display its results using `RunComparison()`:
+> **Uses `AsExpandable()` to allow EF Core compatibility.**
 
 ```csharp
-static void RunComparison(MyHotelDbContext context, Func<MyHotelDbContext, IQueryable<Guest>> queryMethod, [CallerArgumentExpression(nameof(queryMethod))] string methodName = "")
+static IQueryable<RoomDetail> QuerySyntaxWithLinqKit(Expression<Func<Room, bool>> roomCriteria, MyHotelDbContext context)
 {
-    Console.WriteLine($"### {methodName} ###
-");
+    var query = from room in context.Rooms.AsExpandable().Where(roomCriteria.And(r => r.RoomDetailId != 0))
+                select room.RoomDetail;
 
-    var queryable = queryMethod(context);
-
-    Console.WriteLine("SQL Query:");
-    Console.WriteLine(queryable.ToQueryString());
-    Console.WriteLine();
-
-    Console.WriteLine("Results:");
-    foreach (var guest in queryable.ToArray())
-    {
-        Console.WriteLine($" - {guest.Name}");
-    }
-    Console.WriteLine("
----------------------------------
-");
+    return query;
 }
 ```
 
-- Uses `[CallerArgumentExpression]` (C# 10+) to infer the method name automatically.
-- Prints the **SQL query and execution results** for each test.
+#### **6. Spec: Query Syntax**
+
+> **Uses a pure expression-based approach, avoiding `AsExpandable()` and making it more portable.**
+
+```csharp
+static IQueryable<RoomDetail> QuerySyntaxWithSpec(Spec<Room> roomSpec, MyHotelDbContext context)
+{
+    var query = from room in context.Rooms.Where(roomSpec.And(r => r.RoomDetailId != 0))
+                select room.RoomDetail;
+
+    return query;
+}
+```
 
 ## **Conclusion**
 

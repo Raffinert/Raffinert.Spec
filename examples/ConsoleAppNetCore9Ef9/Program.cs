@@ -15,12 +15,12 @@ context.Database.EnsureCreated();
 
 Console.WriteLine("Testing LINQKit vs Spec<T>:\n");
 
-RunComparison(OrConditionWithLinqKitPredicate(context));
-RunComparison(OrConditionWithWithSpec(context));
-RunComparison(NestedConditionsWithLinqKitExpressions(context));
-RunComparison(NestedConditionsWithSpec(context));
-RunComparison(QuerySyntaxWithSpec(Spec<Room>.Create(r => r.Number == 101), context));
-RunComparison(QuerySyntaxWithLinqKit(r => r.Number == 101, context));
+RunQueryAndPrintResult(OrConditionWithLinqKitPredicate(context));
+RunQueryAndPrintResult(OrConditionWithWithSpec(context));
+RunQueryAndPrintResult(NestedConditionsWithLinqKitExpressions(context));
+RunQueryAndPrintResult(NestedConditionsWithSpec(context));
+RunQueryAndPrintResult(QuerySyntaxWithSpec(Spec<Room>.Create(r => r.Number == 101), context));
+RunQueryAndPrintResult(QuerySyntaxWithLinqKit(r => r.Number == 101, context));
 
 return;
 
@@ -72,7 +72,7 @@ static IQueryable<RoomDetail> QuerySyntaxWithSpec(Spec<Room> roomSpec, MyHotelDb
     return query;
 }
 
-static void RunComparison<T>(IQueryable<T> queryable, [CallerArgumentExpression(nameof(queryable))] string methodName = "")
+static void RunQueryAndPrintResult<T>(IQueryable<T> queryable, [CallerArgumentExpression(nameof(queryable))] string methodName = "")
 {
     Console.WriteLine($"### {methodName} ###\n");
 
