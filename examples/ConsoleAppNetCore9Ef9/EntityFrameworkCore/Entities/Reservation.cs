@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ConsoleAppNetCore9Ef9.EntityFrameworkCore.Entities
 {
-    public class Reservation
+    public record Reservation
     {
         [Key]
         public int Id { get; set; }

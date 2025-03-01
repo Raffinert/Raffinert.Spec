@@ -2,7 +2,7 @@
 
 namespace ConsoleAppNetCore9Ef9.EntityFrameworkCore.Entities
 {
-    public class RoomDetail
+    public record RoomDetail
     {
         [Key]
         public int Id { get; set; }

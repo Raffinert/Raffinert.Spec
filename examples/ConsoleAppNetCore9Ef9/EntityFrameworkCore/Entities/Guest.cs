@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ConsoleAppNetCore9Ef9.EntityFrameworkCore.Entities
 {
-    public class Guest
+    public record Guest
     {
         [Key]
         public int Id { get; set; }

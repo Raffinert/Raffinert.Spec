@@ -15,11 +15,14 @@ context.Database.EnsureCreated();
 
 Console.WriteLine("Testing LINQKit vs Spec<T>:\n");
 
-RunComparison(context, OrConditionWithLinqKitPredicate);
-RunComparison(context, OrConditionWithWithSpec);
-RunComparison(context, NestedConditionsWithLinqKitExpressions);
-RunComparison(context, NestedConditionsWithSpec);
-        
+RunComparison(OrConditionWithLinqKitPredicate(context));
+RunComparison(OrConditionWithWithSpec(context));
+RunComparison(NestedConditionsWithLinqKitExpressions(context));
+RunComparison(NestedConditionsWithSpec(context));
+RunComparison(QuerySyntaxWithSpec(Spec<Room>.Create(r => r.Number == 101), context));
+RunComparison(QuerySyntaxWithLinqKit(r => r.Number == 101, context));
+
+return;
 
 static IQueryable<Guest> OrConditionWithLinqKitPredicate(MyHotelDbContext context)
 {
@@ -53,20 +56,34 @@ static IQueryable<Guest> NestedConditionsWithSpec(MyHotelDbContext context)
     return context.Guests.Where(criteria2);
 }
 
-static void RunComparison(MyHotelDbContext context, Func<MyHotelDbContext, IQueryable<Guest>> queryMethod, [CallerArgumentExpression(nameof(queryMethod))] string methodName = "")
+static IQueryable<RoomDetail> QuerySyntaxWithLinqKit(Expression<Func<Room, bool>> roomCriteria, MyHotelDbContext context)
+{
+    var query = from room in context.Rooms.AsExpandable().Where(roomCriteria.And(r => r.RoomDetailId != 0))
+                select room.RoomDetail;
+
+    return query;
+}
+
+static IQueryable<RoomDetail> QuerySyntaxWithSpec(Spec<Room> roomSpec, MyHotelDbContext context)
+{
+    var query = from room in context.Rooms.Where(roomSpec.And(r => r.RoomDetailId != 0))
+                select room.RoomDetail;
+
+    return query;
+}
+
+static void RunComparison<T>(IQueryable<T> queryable, [CallerArgumentExpression(nameof(queryable))] string methodName = "")
 {
     Console.WriteLine($"### {methodName} ###\n");
-
-    var queryable = queryMethod(context);
 
     Console.WriteLine("SQL Query:");
     Console.WriteLine(queryable.ToQueryString());
     Console.WriteLine();
 
     Console.WriteLine("Results:");
-    foreach (var guest in queryable.ToArray())
+    foreach (var item in queryable.ToArray())
     {
-        Console.WriteLine($" - {guest.Name}");
+        Console.WriteLine(item);
     }
     Console.WriteLine("\n---------------------------------\n");
 }
