@@ -17,7 +17,7 @@
 
 ## Why Another Specification Library?
 
-The main goal was to create a simple replacement of [LINQKit](https://github.com/scottksmith95/LINQKit) library without any Entity Framework specific tweaks. So treat the specification as an expression constructor.
+The main goal was to create a simple replacement of [LINQKit](https://github.com/scottksmith95/LINQKit) library without any Entity Framework specific tweaks (see [comparison LinqKit vs Spec](https://github.com/Raffinert/Raffinert.Spec/tree/main/examples)). So treat the specification as an expression constructor.
 
 With Raffinert.Spec you can:
 
