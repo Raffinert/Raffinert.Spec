@@ -27,7 +27,7 @@ With Raffinert.Spec you can:
 
 ## Usage
 
-Full examples can be found in [Integration Tests](https://github.com/Raffinert/Raffinert.Spec/blob/main/tests/Raffinert.Spec.IntegrationTests/SpecTests.cs)
+Detailed examples can be found in [Integration Tests](https://github.com/Raffinert/Raffinert.Spec/blob/main/tests/Raffinert.Spec.IntegrationTests/SpecTests.cs)
 
 ### Defining a Specification
 
