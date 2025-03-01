@@ -10,7 +10,7 @@ This example is adapted from the original example found in the [LINQKit GitHub r
 
 Ensure you have the following installed:
 
-- .NET 7 or later
+- .NET 9 or later
 - Microsoft SQL Server (LocalDB or full instance)
 - Required NuGet packages:
   - `Microsoft.EntityFrameworkCore.SqlServer`
