@@ -78,12 +78,12 @@ public class SpecTemplatesTests(ProductFilterFixture fixture) : IClassFixture<Pr
         // Arrange
         var bananaStringSpec = Spec<string>.Create(n => n == "Banana");
 
-        ISpecTemplate<Template> specTemplate = SpecTemplate<Product>.Create(
+        ISpecTemplate<Template> specTemplate = SpecTemplate<ReadOnlyProduct>.Create(
             p => new Template { Name = p.Name, Id = p.Id },
             arg => bananaStringSpec.IsSatisfiedBy(arg.Name) && arg.Id > 0);
 
-        var categorySpec = specTemplate.Adapt<Category>("cat");
-        var productSpec = specTemplate.Adapt<Product>("prod");
+        var categorySpec = specTemplate.Adapt<ReadOnlyCategory>("cat");
+        var productSpec = specTemplate.Adapt<ReadOnlyProduct>("prod");
 
         // Act
         var filteredProducts = _context.Products.Where(productSpec).ToArray();
