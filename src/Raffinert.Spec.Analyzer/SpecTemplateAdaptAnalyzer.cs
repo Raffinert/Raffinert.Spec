@@ -37,15 +37,15 @@ public class SpecTemplateAdaptAnalyzer : DiagnosticAnalyzer
         if (semanticModel.GetSymbolInfo(invocationExpr).Symbol is not IMethodSymbol methodSymbol)
             return;
 
-        // Ensure it's a call to SpecTemplate<TSample, TTemplate>.Adapt<TN>()
-        if (methodSymbol.ContainingType.Name != "SpecTemplate" || methodSymbol.Name != "Adapt")
+        // Ensure it's a call to SpecTemplate<TSample, TTemplate>.Adapt<TN>() or ISpecTemplate<TTemplate>.Adapt<TN>()
+        if ((methodSymbol.ContainingType.Name != "ISpecTemplate" && methodSymbol.ContainingType.Name != "SpecTemplate") || methodSymbol.Name != "Adapt")
             return;
 
         // Extract TTemplate and TN
-        var tTemplate = methodSymbol.ContainingType.TypeArguments[1];
-        
-        if (!tTemplate.IsAnonymousType)
-            return; // Ignore if it's not an anonymous type
+        var tTemplate =  methodSymbol.ContainingType.TypeArguments[methodSymbol.ContainingType.Name == "ISpecTemplate" ? 0 : 1];
+
+        if (tTemplate.TypeKind != TypeKind.Class || tTemplate.SpecialType != SpecialType.None)
+            return; // Ignore if not a class or any special type
 
         var tN = methodSymbol.TypeArguments[0];
 

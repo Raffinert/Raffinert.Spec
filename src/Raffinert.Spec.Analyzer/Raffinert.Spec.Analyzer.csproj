@@ -8,7 +8,7 @@
 		<IsRoslynComponent>true</IsRoslynComponent>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 		<LangVersion>latest</LangVersion>
-		<Version>0.0.1</Version>
+		<Version>0.0.2</Version>
 		<Title>Readonly DbContext Generator</Title>
 		<Description>An analyzer that verifies the type signature compatibility for Specification template.</Description>
 		<Copyright>Yevhen Cherkes 2025</Copyright>

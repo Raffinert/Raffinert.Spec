@@ -17,7 +17,7 @@
 
 ## Why Another Specification Library?
 
-The main goal was to create a simple replacement of [LINQKit](https://github.com/scottksmith95/LINQKit) library without any Entity Framework specific tweaks.
+The main goal was to create a simple replacement of [LINQKit](https://github.com/scottksmith95/LINQKit) library without any Entity Framework specific tweaks (see the [LINQKit vs Spec Comparison](https://github.com/Raffinert/Raffinert.Spec/tree/main/examples) and [discussion about embedding linqKit into EfCore](https://github.com/dotnet/efcore/issues/15670)). Please treat the specification as an expression constructor.
 
 With Raffinert.Spec you can:
 
@@ -27,7 +27,7 @@ With Raffinert.Spec you can:
 
 ## Usage
 
-Full examples can be found in [Integration Tests](https://github.com/Raffinert/Raffinert.Spec/blob/main/tests/Raffinert.Spec.IntegrationTests/SpecTests.cs)
+Detailed examples can be found in [Integration Tests](https://github.com/Raffinert/Raffinert.Spec/blob/main/tests/Raffinert.Spec.IntegrationTests/SpecTests.cs)
 
 ### Defining a Specification
 
@@ -71,7 +71,7 @@ In this example, a specification template is created for `Product`, filtering ba
 To prevent runtime errors when using `SpecTemplate`, we provide Roslyn [Raffinert.Spec.Analyzer](https://github.com/Raffinert/Raffinert.Spec/tree/main/src/Raffinert.Spec.Analyzer) that:
 
 - Ensure `SpecTemplate<TSample>.Adapt<TN>()` only adapts to types that contain all required members.
-- Validate that `SpecTemplate.Create(...)` uses an anonymous type projection (e.g., `p => new { p.Name }`).
+- Validate that `SpecTemplate.Create(...)` uses either an anonymous type projection (e.g., `p => new { p.Name }`) or class initialize statement (e.g., `p => new Template{ Name = p.Name }`).
 
 These analyzers catch issues at compile-time, improving reliability and maintainability.
 
