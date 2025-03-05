@@ -53,12 +53,9 @@ We execute multiple queries to compare their behavior:
 static IQueryable<Guest> OrConditionWithLinqKitPredicate(MyHotelDbContext context)
 {
     var predicate = PredicateBuilder.New<Guest>(x => x.Id > 0).Or(x => x.Name.Contains("e"));
-    return context.Guests.AsExpandable().Where(predicate);
+    return context.Guests.Where(predicate);
 }
 ```
-
-- Requires `AsExpandable()` for EF Core compatibility.
-- Generates **valid SQL but relies on EF-specific behavior**.
 
 #### **2. Spec: OR Condition**
 
@@ -70,20 +67,16 @@ static IQueryable<Guest> OrConditionWithWithSpec(MyHotelDbContext context)
 }
 ```
 
-- Works **without** `AsExpandable()`.
-- Uses a **pure expression tree**.
-- **More portable across LINQ providers.**
-
 #### **3. LINQKit: Nested Conditions with Expressions**
 
 ```csharp
 static IQueryable<Guest> NestedConditionsWithLinqKitExpressions(MyHotelDbContext context)
 {
     Expression<Func<Guest, bool>> criteria1 = guest => guest.Name.Contains("af");
-    Expression<Func<Guest, bool>> criteria2 = guest => criteria1.Invoke(guest) || guest.Id > 1;
-    
+    Expression<Func<Reservation, bool>> criteria2 = reservation => criteria1.Invoke(reservation.Guest);
+
     Console.WriteLine($"LINQKit expanded expression: {criteria2.Expand()}");
-    return context.Guests.AsExpandable().Where(criteria2);
+    return context.Reservations.AsExpandable().Where(criteria2).Select(r => r.Guest);
 }
 ```
 
@@ -96,24 +89,22 @@ static IQueryable<Guest> NestedConditionsWithLinqKitExpressions(MyHotelDbContext
 static IQueryable<Guest> NestedConditionsWithSpec(MyHotelDbContext context)
 {
     var criteria1 = Spec<Guest>.Create(guest => guest.Name.Contains("af"));
-    var criteria2 = Spec<Guest>.Create(guest => criteria1.IsSatisfiedBy(guest) || guest.Id > 1);
-    
+    var criteria2 = Spec<Reservation>.Create(reservation => criteria1.IsSatisfiedBy(reservation.Guest));
+
     Console.WriteLine($"Spec<T> expanded expression: {criteria2.GetExpandedExpression()}");
-    return context.Guests.Where(criteria2);
+    return context.Reservations.Where(criteria2).Select(r => r.Guest);
 }
 ```
 
 - Uses `GetExpandedExpression()` to evaluate nested expressions **without EF-specific modifications**.
-- Maintains **full LINQ compatibility**.
+- Works **without** `AsExpandable()`.
 
 #### **5. LINQKit: Query Syntax**
-
-> **Uses `AsExpandable()` to allow EF Core compatibility.**
 
 ```csharp
 static IQueryable<RoomDetail> QuerySyntaxWithLinqKit(Expression<Func<Room, bool>> roomCriteria, MyHotelDbContext context)
 {
-    var query = from room in context.Rooms.AsExpandable().Where(roomCriteria.And(r => r.RoomDetailId != 0))
+    var query = from room in context.Rooms.Where(roomCriteria.And(r => r.RoomDetailId != 0))
                 select room.RoomDetail;
 
     return query;
@@ -121,8 +112,6 @@ static IQueryable<RoomDetail> QuerySyntaxWithLinqKit(Expression<Func<Room, bool>
 ```
 
 #### **6. Spec: Query Syntax**
-
-> **Uses a pure expression-based approach, avoiding `AsExpandable()` and making it more portable.**
 
 ```csharp
 static IQueryable<RoomDetail> QuerySyntaxWithSpec(Spec<Room> roomSpec, MyHotelDbContext context)

@@ -28,8 +28,7 @@ static IQueryable<Guest> OrConditionWithLinqKitPredicate(MyHotelDbContext contex
 {
     var predicate = PredicateBuilder.New<Guest>(x => x.Id > 0).Or(x => x.Name.Contains("e"));
 
-    // LINQKit requires AsExpandable() to work correctly with EF Core
-    return context.Guests.AsExpandable().Where(predicate);
+    return context.Guests.Where(predicate);
 }
 
 static IQueryable<Guest> OrConditionWithWithSpec(MyHotelDbContext context)
@@ -41,24 +40,24 @@ static IQueryable<Guest> OrConditionWithWithSpec(MyHotelDbContext context)
 static IQueryable<Guest> NestedConditionsWithLinqKitExpressions(MyHotelDbContext context)
 {
     Expression<Func<Guest, bool>> criteria1 = guest => guest.Name.Contains("af");
-    Expression<Func<Guest, bool>> criteria2 = guest => criteria1.Invoke(guest) || guest.Id > 1;
+    Expression<Func<Reservation, bool>> criteria2 = reservation => criteria1.Invoke(reservation.Guest);
 
     Console.WriteLine($"LINQKit expanded expression: {criteria2.Expand()}");
-    return context.Guests.AsExpandable().Where(criteria2);
+    return context.Reservations.AsExpandable().Where(criteria2).Select(r => r.Guest);
 }
 
 static IQueryable<Guest> NestedConditionsWithSpec(MyHotelDbContext context)
 {
     var criteria1 = Spec<Guest>.Create(guest => guest.Name.Contains("af"));
-    var criteria2 = Spec<Guest>.Create(guest => criteria1.IsSatisfiedBy(guest) || guest.Id > 1);
+    var criteria2 = Spec<Reservation>.Create(reservation => criteria1.IsSatisfiedBy(reservation.Guest));
 
     Console.WriteLine($"Spec<T> expanded expression: {criteria2.GetExpandedExpression()}");
-    return context.Guests.Where(criteria2);
+    return context.Reservations.Where(criteria2).Select(r => r.Guest);
 }
 
 static IQueryable<RoomDetail> QuerySyntaxWithLinqKit(Expression<Func<Room, bool>> roomCriteria, MyHotelDbContext context)
 {
-    var query = from room in context.Rooms.AsExpandable().Where(roomCriteria.And(r => r.RoomDetailId != 0))
+    var query = from room in context.Rooms.Where(roomCriteria.And(r => r.RoomDetailId != 0))
                 select room.RoomDetail;
 
     return query;
