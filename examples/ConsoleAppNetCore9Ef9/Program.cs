@@ -27,7 +27,6 @@ return;
 static IQueryable<Guest> OrConditionWithLinqKitPredicate(MyHotelDbContext context)
 {
     var predicate = PredicateBuilder.New<Guest>(x => x.Id > 0).Or(x => x.Name.Contains("e"));
-
     return context.Guests.Where(predicate);
 }
 
@@ -37,22 +36,26 @@ static IQueryable<Guest> OrConditionWithWithSpec(MyHotelDbContext context)
     return context.Guests.Where(spec);
 }
 
-static IQueryable<Guest> NestedConditionsWithLinqKitExpressions(MyHotelDbContext context)
+static IQueryable<Reservation> NestedConditionsWithLinqKitExpressions(MyHotelDbContext context)
 {
-    Expression<Func<Guest, bool>> criteria1 = guest => guest.Name.Contains("af");
+    Expression<Func<Guest, bool>> criteria1 = guest => guest.Name.Contains("eo");
     Expression<Func<Reservation, bool>> criteria2 = reservation => criteria1.Invoke(reservation.Guest);
 
     Console.WriteLine($"LINQKit expanded expression: {criteria2.Expand()}");
-    return context.Reservations.AsExpandable().Where(criteria2).Select(r => r.Guest);
+    return context.Reservations.AsExpandable().Where(criteria2);
+    // or
+    // return context.Reservations.Where(criteria2.Expand());
 }
 
-static IQueryable<Guest> NestedConditionsWithSpec(MyHotelDbContext context)
+static IQueryable<Reservation> NestedConditionsWithSpec(MyHotelDbContext context)
 {
-    var criteria1 = Spec<Guest>.Create(guest => guest.Name.Contains("af"));
+    var criteria1 = Spec<Guest>.Create(guest => guest.Name.Contains("eo"));
     var criteria2 = Spec<Reservation>.Create(reservation => criteria1.IsSatisfiedBy(reservation.Guest));
 
-    Console.WriteLine($"Spec<T> expanded expression: {criteria2.GetExpandedExpression()}");
-    return context.Reservations.Where(criteria2).Select(r => r.Guest);
+    Console.WriteLine($"Spec expanded expression: {criteria2.GetExpandedExpression()}");
+    return context.Reservations.Where(criteria2);
+    // or
+    // return context.Reservations.Where(criteria2.GetExpandedExpression());
 }
 
 static IQueryable<RoomDetail> QuerySyntaxWithLinqKit(Expression<Func<Room, bool>> roomCriteria, MyHotelDbContext context)
@@ -86,4 +89,3 @@ static void RunQueryAndPrintResult<T>(IQueryable<T> queryable, [CallerArgumentEx
     }
     Console.WriteLine("\n---------------------------------\n");
 }
-    
