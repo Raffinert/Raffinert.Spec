@@ -16,7 +16,7 @@ context.Database.EnsureCreated();
 Console.WriteLine("Testing LINQKit vs Spec<T>:\n");
 
 RunQueryAndPrintResult(OrConditionWithLinqKitPredicate(context));
-RunQueryAndPrintResult(OrConditionWithWithSpec(context));
+RunQueryAndPrintResult(OrConditionWithSpec(context));
 RunQueryAndPrintResult(NestedConditionsWithLinqKitExpressions(context));
 RunQueryAndPrintResult(NestedConditionsWithSpec(context));
 RunQueryAndPrintResult(QuerySyntaxWithSpec(Spec<Room>.Create(r => r.Number == 101), context));
@@ -30,7 +30,7 @@ static IQueryable<Guest> OrConditionWithLinqKitPredicate(MyHotelDbContext contex
     return context.Guests.Where(predicate);
 }
 
-static IQueryable<Guest> OrConditionWithWithSpec(MyHotelDbContext context)
+static IQueryable<Guest> OrConditionWithSpec(MyHotelDbContext context)
 {
     var spec = Spec<Guest>.Create(x => x.Id > 0).Or(x => x.Name.Contains("e"));
     return context.Guests.Where(spec);
