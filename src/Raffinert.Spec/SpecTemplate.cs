@@ -35,7 +35,7 @@ public class SpecTemplate<TSample, TTemplate> : ISpecTemplate<TTemplate>
                 mex = me.Bindings.Select(x => (x as MemberAssignment)?.Expression as MemberExpression).OfType<MemberExpression>().ToArray();
                 if (mex.Length != me.Bindings.Count) throw new ArgumentException("Template must be a NewExpression with MemberExpressions only", nameof(template));
                 var propsWithDifferentNames = me.Bindings.Where(x => ((MemberExpression)((MemberAssignment)x).Expression).Member.Name != x.Member.Name).ToArray();
-                if(propsWithDifferentNames.Length > 0)
+                if (propsWithDifferentNames.Length > 0)
                     throw new ArgumentException("Template member names must match the target type", nameof(template));
                 this.expression = expression;
                 break;
@@ -57,20 +57,20 @@ public class SpecTemplate<TSample, TTemplate> : ISpecTemplate<TTemplate>
         return Expression.Lambda<Func<TInput, TResult>>(updatedExp2Body!, newParameter);
     }
 
-    public Spec<TN> Adapt<TN>(string? newParameterName = null)
+    public Spec<TTarget> Adapt<TTarget>(string? newParameterName = null)
     {
-        ValidateTypeSignature<TN>();
+        ValidateTypeSignature<TTarget>();
 
         var adaptedExpression = expression != null
-            ? Convert<TTemplate, TN, bool>(expression, newParameterName)
-            : Convert<TSample, TN, bool>(combinedExpression!, newParameterName);
+            ? ReplaceParameterType<TTemplate, TTarget, bool>(expression, newParameterName)
+            : ReplaceParameterType<TSample, TTarget, bool>(combinedExpression!, newParameterName);
 
-        return Spec<TN>.Create(adaptedExpression);
+        return Spec<TTarget>.Create(adaptedExpression);
     }
 
-    private void ValidateTypeSignature<TN>()
+    private void ValidateTypeSignature<TTarget>()
     {
-        var tnMembers = typeof(TN).GetMembers(BindingFlags.Instance | BindingFlags.Public).ToDictionary(x => x.Name);
+        var tnMembers = typeof(TTarget).GetMembers(BindingFlags.Instance | BindingFlags.Public).ToDictionary(x => x.Name);
         var missingMembers = templateMemberExpressions.Where(expr =>
         {
             var hasMember = tnMembers.TryGetValue(expr.Member.Name, out var member);
@@ -99,11 +99,24 @@ public class SpecTemplate<TSample, TTemplate> : ISpecTemplate<TTemplate>
         }
     }
 
-    private static Expression<Func<TN, TR>> Convert<TT, TN, TR>(Expression<Func<TT, TR>> root, string? newParameterName)
+    private static Expression<Func<TTarget, TResult>> ReplaceParameterType<TSource, TTarget, TResult>(Expression<Func<TSource, TResult>> expr, string? newParameterName)
     {
-        var visitor = new ParameterTypeVisitor(root.Parameters[0], Expression.Parameter(typeof(TN), newParameterName ?? root.Parameters[0].Name));
-        var expression = (Expression<Func<TN, TR>>)visitor.Visit(root)!;
-        return expression;
+        var oldParameter = expr.Parameters[0];
+        var newParameter = Expression.Parameter(typeof(TTarget), newParameterName ?? oldParameter.Name);
+        var visitor = new ParameterTypeVisitor(oldParameter, newParameter);
+        var lambdaExpression = (LambdaExpression)visitor.Visit(expr)!;
+
+        //this one can be useful for Proj, not for Spec
+        //if (lambdaExpression.ReturnType != typeof(TResult)
+        //    && (lambdaExpression.ReturnType.IsSubclassOf(typeof(TResult))
+        //        || typeof(TResult).IsAssignableFrom(lambdaExpression.ReturnType)))
+        //{
+        //    var convertedBody = Expression.Convert(lambdaExpression.Body, typeof(TResult));
+        //    return Expression.Lambda<Func<TTarget, TResult>>(convertedBody, newParameter);
+        //}
+
+        return (Expression<Func<TTarget, TResult>>)lambdaExpression;
+
     }
 
     private class ParameterTypeVisitor(ParameterExpression oldParameter, ParameterExpression newParameter)
@@ -135,5 +148,5 @@ public class SpecTemplate<TSample, TTemplate> : ISpecTemplate<TTemplate>
 
 public interface ISpecTemplate<TTemplate>
 {
-    Spec<TN> Adapt<TN>(string? newParameterName = null);
+    Spec<TTarget> Adapt<TTarget>(string? newParameterName = null);
 }
