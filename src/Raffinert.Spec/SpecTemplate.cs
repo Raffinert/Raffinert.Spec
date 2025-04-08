@@ -68,9 +68,9 @@ public class SpecTemplate<TSample, TTemplate> : ISpecTemplate<TTemplate>
         return Spec<TTarget>.Create(adaptedExpression);
     }
 
-    private void ValidateTypeSignature<TN>()
+    private void ValidateTypeSignature<TTarget>()
     {
-        var tnMembers = typeof(TN).GetMembers(BindingFlags.Instance | BindingFlags.Public).ToDictionary(x => x.Name);
+        var tnMembers = typeof(TTarget).GetMembers(BindingFlags.Instance | BindingFlags.Public).ToDictionary(x => x.Name);
         var missingMembers = templateMemberExpressions.Where(expr =>
         {
             var hasMember = tnMembers.TryGetValue(expr.Member.Name, out var member);
@@ -148,5 +148,5 @@ public class SpecTemplate<TSample, TTemplate> : ISpecTemplate<TTemplate>
 
 public interface ISpecTemplate<TTemplate>
 {
-    Spec<TN> Adapt<TN>(string? newParameterName = null);
+    Spec<TTarget> Adapt<TTarget>(string? newParameterName = null);
 }
