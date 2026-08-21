@@ -1,5 +1,20 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
 
+> [!IMPORTANT]
+> **This project has been superseded by [Raffinert.Expressions](https://github.com/Raffinert/Raffinert.Expressions) and is no longer actively maintained.**
+>
+> `Raffinert.Spec` has been consolidated with `Raffinert.Proj` into **Raffinert.Expressions**, which provides a unified API for composable conditions and projections built on the same expression-expansion engine.
+>
+> For new projects, use **[Raffinert.Expressions](https://github.com/Raffinert/Raffinert.Expressions)**.
+>
+> Existing `Raffinert.Spec` users can migrate primarily by replacing:
+>
+> * `Spec<T>` → `Condition<T>`
+> * `IsSatisfiedBy(...)` → `Invoke(...)`
+> * specification templates → structural adaptation with `AdaptSource<T>()`
+>
+> See the **[migration guide](https://github.com/Raffinert/Raffinert.Expressions/blob/main/docs/migration.md)** for details.
+
 # Raffinert.Spec
 [![NuGet version (Raffinert.Spec)](https://img.shields.io/nuget/v/Raffinert.Spec.svg?style=flat-square)](https://www.nuget.org/packages/Raffinert.Spec/)
 
